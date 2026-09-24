@@ -1,7 +1,10 @@
 package za.co.tlinkportal.common.dto.user.response;
 
+import jdk.jshell.Snippet;
+import lombok.Builder;
 import lombok.Data;
 
+@Builder
 @Data
 public class UserDto {
 
@@ -10,4 +13,6 @@ public class UserDto {
     private String middleName;
     private String lastName;
     private String email;
+    private String cellphoneNumber;
+    private String profilePictureUrl;
 }

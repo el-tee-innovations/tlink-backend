@@ -1,5 +1,6 @@
 package za.co.tlinkportal.auth.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -18,7 +19,9 @@ public class AuthUser{
     @Id
     @GeneratedValue
     private long id;
+    @Column(nullable = false, unique = true)
     private long userId;
+    @Column(nullable = false, unique = true)
     private String email;
     private String passwordHash;
 

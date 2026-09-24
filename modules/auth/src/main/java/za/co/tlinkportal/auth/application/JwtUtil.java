@@ -10,7 +10,7 @@ import java.util.List;
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "your-secret-key";
+    private final String SECRET = Jwts.SIG.HS256.key().build().toString();
 
     public String generateToken(String email, List<String> roles) {
         return Jwts.builder()

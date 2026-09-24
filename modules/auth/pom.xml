@@ -73,6 +73,7 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Internal -->
         <dependency>
             <groupId>za.co.tlinkportal</groupId>
             <artifactId>common</artifactId>

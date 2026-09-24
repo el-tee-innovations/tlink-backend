@@ -11,7 +11,8 @@ import za.co.tlinkportal.auth.api.dto.request.RegisterRequest;
 import za.co.tlinkportal.auth.api.dto.response.LoginResponse;
 import za.co.tlinkportal.auth.domain.AuthUser;
 import za.co.tlinkportal.auth.infrastructure.AuthUserRepository;
-import za.co.tlinkportal.auth.infrastructure.client.UserClient;
+import za.co.tlinkportal.auth.infrastructure.client.UserFeignClient;
+import za.co.tlinkportal.common.contracts.user.UserIdentityPort;
 import za.co.tlinkportal.common.dto.user.request.CreateUserRequest;
 import za.co.tlinkportal.common.dto.user.response.UserDto;
 import za.co.tlinkportal.common.dto.user.response.UserResponse;
@@ -26,53 +27,61 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthUserRepository authUserRepository;
-    private final UserClient userClient;
+    private final UserIdentityPort userIdentityPort;
 
     @Transactional
     public void register(RegisterRequest registerRequest){
 
         // Create user in User Service
         CreateUserRequest createUserRequest = CreateUserRequest.builder()
-                .email(registerRequest.getEmail())
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
                 .build();
-        UserResponse userResponse = userClient.createUser(createUserRequest);
+        UserResponse userResponse = userIdentityPort.createUser(createUserRequest);
 
         // Create auth user
         AuthUser authUser = AuthUser.builder()
                 .userId(userResponse.getId())
-                .email(userResponse.getEmail())
+                .email(registerRequest.getEmail())
                 .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
                 .build();
-
         authUserRepository.save(authUser);
 
     }
 
     public LoginResponse login(LoginRequest request) {
-
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
 
         AuthUser authUser = authUserRepository.findByEmail(request.getEmail())
                 .orElseThrow();
-        UserDto userDto = userClient.getUserById(authUser.getUserId());
+        UserDto userDto = userIdentityPort.getUserById(authUser.getUserId());
 
-        List<String> roles = List.of("USER"); // extend later
+        List<String> roles = List.of("USER","RECRUITER","ADMIN"); // extend later
 
         String token = jwtUtil.generateToken(authUser.getEmail(), roles);
 
-        return LoginResponse.builder()
-                .token(token)
-                .userId(authUser.getId())
+        LoginResponse.User user = LoginResponse.User.builder()
+                .userId(authUser.getUserId())
                 .email(authUser.getEmail())
-                .firstName((userDto.getFirstName()) + " " + userDto.getLastName())
-                .roles(roles)
+                .firstName(userDto.getFirstName())
+                .middleName(userDto.getMiddleName())
+                .lastName(userDto.getLastName())
+                .role("ADMIN") // extend later
+                .build();
+
+        return LoginResponse.builder()
+                .accessToken(token)
+                .user(user)
                 .build();
     }
 }

@@ -8,16 +8,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import za.co.tlinkportal.auth.domain.AuthUser;
 import za.co.tlinkportal.auth.infrastructure.AuthUserRepository;
-import za.co.tlinkportal.auth.infrastructure.client.UserClient;
-import za.co.tlinkportal.common.dto.user.response.UserDto;
-
+import za.co.tlinkportal.auth.infrastructure.client.UserFeignClient;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserClient userClient;
+    private final UserFeignClient userFeignClient;
     private final AuthUserRepository AuthUserRepository;
 
     @Override
@@ -26,12 +24,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         AuthUser authUser = AuthUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        UserDto userDto = userClient.getUserById(authUser.getUserId());
-
         return new org.springframework.security.core.userdetails.User(
-                userDto.getEmail(),
+                authUser.getEmail(),
                 authUser.getPasswordHash(),
-                List.of(new SimpleGrantedAuthority("ROLE_USER")) // extend later
+                List.of(new SimpleGrantedAuthority("JOB_SEEKER")) // extend later
         );
     }
 }

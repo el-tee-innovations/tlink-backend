@@ -3,8 +3,8 @@ package za.co.tlinkportal.user.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import za.co.tlinkportal.common.dto.user.request.CreateUserRequest;
+import za.co.tlinkportal.common.dto.user.response.UserDto;
 import za.co.tlinkportal.common.dto.user.response.UserResponse;
-import za.co.tlinkportal.user.api.dto.response.UserDto;
 import za.co.tlinkportal.user.domain.User;
 import za.co.tlinkportal.user.infrastructure.UserRepository;
 
@@ -25,12 +25,11 @@ public class UserService {
                 .cellphoneNumber(request.getCellphoneNumber())
                 .createdAt(LocalDate.now())
                 .build();
-
         return map(repository.save(user));
     }
 
-    public UserResponse getUser(Long id) {
-        return map(repository.findById(id)
+    public UserDto getUserById(Long id) {
+        return toDto(repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found")));
     }
 
@@ -52,10 +51,12 @@ public class UserService {
     }
 
     private UserDto toDto(User user) {
-        UserDto dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-        return dto;
+        return UserDto.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .cellphoneNumber(user.getCellphoneNumber())
+                .profilePictureUrl(user.getProfilePictureUrl())
+                .build();
     }
 }

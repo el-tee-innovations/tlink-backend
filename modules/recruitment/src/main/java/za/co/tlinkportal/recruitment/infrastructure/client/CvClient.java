@@ -10,12 +10,12 @@ import za.co.tlinkportal.common.dto.cv.response.CvResponse;
 
 import java.util.List;
 
-@FeignClient(name = "cv-service", url = "http://localhost:8080")
+@FeignClient(name = "recruitment-cv-service", url = "http://localhost:8080")
 public interface CvClient {
 
     @PostMapping("/api/cv/skills/search")
     List<CvSkillDto> findCandidatesBySkills(@RequestBody List<Long> skillIds);
 
     @RequestMapping("/api/cv/{userId}")
-    CvResponse getByUserId(@RequestParam Long userId);
+    CvResponse getByUserId(@RequestParam("userId") Long userId);
 }
